@@ -4,7 +4,7 @@ Proyecto académico en Java 21, Spring Boot 4.0.5, Spring Cloud Gateway, Postgre
 
 ![Vista previa de Merca](Frontend/vista-previa.png)
 
-La arquitectura toma como guía [NexusMicroservicios de Henry Wong](https://github.com/hwongu/NexusMicroservicios): punto de entrada único, servicios por dominio, comunicación HTTP y manejo central de errores. La implementación de Merca es original, usa Spring JDBC con SQL explícito y adapta esos patrones al comercio electrónico.
+
 
 ## Organización
 
