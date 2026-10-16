@@ -1,0 +1,71 @@
+# Ejecutar desde la raiz: docker compose --env-file .env -f Base_de_Datos/docker-compose.yml up -d
+name: merca-bd-dev
+
+services:
+  db-productos:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce_productos
+      POSTGRES_USER: ecommerce_productos
+      POSTGRES_PASSWORD: ${PRODUCTOS_DB_PASSWORD:?Completa PRODUCTOS_DB_PASSWORD en .env}
+    volumes:
+      - productos-data:/var/lib/postgresql/data
+      - ./init_productos.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "127.0.0.1:${PRODUCTOS_DB_PORT:-15432}:5432"
+    networks: [datos]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  db-ordenes:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce_ordenes
+      POSTGRES_USER: ecommerce_ordenes
+      POSTGRES_PASSWORD: ${ORDENES_DB_PASSWORD:?Completa ORDENES_DB_PASSWORD en .env}
+    volumes:
+      - ordenes-data:/var/lib/postgresql/data
+      - ./init_ordenes.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "127.0.0.1:${ORDENES_DB_PORT:-25432}:5432"
+    networks: [datos]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  db-envios:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce_envios
+      POSTGRES_USER: ecommerce_envios
+      POSTGRES_PASSWORD: ${ENVIOS_DB_PASSWORD:?Completa ENVIOS_DB_PASSWORD en .env}
+    volumes:
+      - envios-data:/var/lib/postgresql/data
+      - ./init_envios.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "127.0.0.1:${ENVIOS_DB_PORT:-35432}:5432"
+    networks: [datos]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  productos-data:
+  ordenes-data:
+  envios-data:
+
+networks:
+  datos:

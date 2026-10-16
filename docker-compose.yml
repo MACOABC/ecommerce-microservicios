@@ -1,0 +1,150 @@
+name: merca
+
+services:
+  db-productos:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce_productos
+      POSTGRES_USER: ecommerce_productos
+      POSTGRES_PASSWORD: ${PRODUCTOS_DB_PASSWORD:?Completa PRODUCTOS_DB_PASSWORD en .env}
+    volumes:
+      - productos-data:/var/lib/postgresql/data
+      - ./Base_de_Datos/init_productos.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks: [productos-db]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  db-ordenes:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce_ordenes
+      POSTGRES_USER: ecommerce_ordenes
+      POSTGRES_PASSWORD: ${ORDENES_DB_PASSWORD:?Completa ORDENES_DB_PASSWORD en .env}
+    volumes:
+      - ordenes-data:/var/lib/postgresql/data
+      - ./Base_de_Datos/init_ordenes.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks: [ordenes-db]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  db-envios:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecommerce_envios
+      POSTGRES_USER: ecommerce_envios
+      POSTGRES_PASSWORD: ${ENVIOS_DB_PASSWORD:?Completa ENVIOS_DB_PASSWORD en .env}
+    volumes:
+      - envios-data:/var/lib/postgresql/data
+      - ./Base_de_Datos/init_envios.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks: [envios-db]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  servicio-productos:
+    build:
+      context: ./Backend
+      dockerfile: servicio-productos/Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://db-productos:5432/ecommerce_productos
+      DB_USER: ecommerce_productos
+      DB_PASSWORD: ${PRODUCTOS_DB_PASSWORD:?Completa PRODUCTOS_DB_PASSWORD en .env}
+    depends_on:
+      db-productos:
+        condition: service_healthy
+    networks: [aplicacion, productos-db]
+
+  servicio-ordenes:
+    build:
+      context: ./Backend
+      dockerfile: servicio-ordenes/Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://db-ordenes:5432/ecommerce_ordenes
+      DB_USER: ecommerce_ordenes
+      DB_PASSWORD: ${ORDENES_DB_PASSWORD:?Completa ORDENES_DB_PASSWORD en .env}
+      PRODUCTOS_URL: http://servicio-productos:8081
+      ENVIOS_URL: http://servicio-envios:8083
+    depends_on:
+      db-ordenes:
+        condition: service_healthy
+      servicio-productos:
+        condition: service_healthy
+    networks: [aplicacion, ordenes-db]
+
+  servicio-envios:
+    build:
+      context: ./Backend
+      dockerfile: servicio-envios/Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_URL: jdbc:postgresql://db-envios:5432/ecommerce_envios
+      DB_USER: ecommerce_envios
+      DB_PASSWORD: ${ENVIOS_DB_PASSWORD:?Completa ENVIOS_DB_PASSWORD en .env}
+      ORDENES_URL: http://servicio-ordenes:8082
+    depends_on:
+      db-envios:
+        condition: service_healthy
+      servicio-ordenes:
+        condition: service_healthy
+    networks: [aplicacion, envios-db]
+
+  api-gateway:
+    build:
+      context: ./Backend
+      dockerfile: api-gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      PRODUCTOS_URL: http://servicio-productos:8081
+      ORDENES_URL: http://servicio-ordenes:8082
+      ENVIOS_URL: http://servicio-envios:8083
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      servicio-productos:
+        condition: service_healthy
+      servicio-ordenes:
+        condition: service_healthy
+      servicio-envios:
+        condition: service_healthy
+    networks: [aplicacion]
+
+  frontend:
+    build:
+      context: ./Frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-8088}:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    networks: [aplicacion]
+
+volumes:
+  productos-data:
+  ordenes-data:
+  envios-data:
+
+networks:
+  aplicacion:
+  productos-db:
+    internal: true
+  ordenes-db:
+    internal: true
+  envios-db:
+    internal: true
