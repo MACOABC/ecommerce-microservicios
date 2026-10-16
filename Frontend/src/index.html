@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#183d36" />
+    <meta
+      name="description"
+      content="Merca: tecnología, escritorio y accesorios para tu día a día."
+    />
+    <title>Merca — Pequeñas cosas, grandes días</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="announcement">
+      Una selección pensada para tu día a día <span>•</span> Precios en soles
+    </div>
+    <header class="header">
+      <a class="brand" href="#catalogo" aria-label="Merca, inicio"
+        >merca<span>✳</span></a
+      >
+      <nav aria-label="Principal">
+        <a href="#catalogo" data-tab="catalogo">Explorar</a>
+        <a href="#pedidos" data-tab="pedidos">Mis pedidos</a>
+        <a href="#seguimiento" data-tab="seguimiento">Seguir envío</a>
+      </nav>
+      <a href="#carrito" class="cart-link" data-tab="carrito"
+        >Mi bolsa <span id="cart-count">0</span></a
+      >
+    </header>
+    <main>
+      <section id="catalogo" class="view">
+        <div class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">OBJETOS QUE HACEN LA DIFERENCIA</p>
+            <h1>Pequeñas cosas.<br /><em>Grandes días.</em></h1>
+            <p>
+              Renueva tu espacio, encuentra tu ritmo.<br />Descubre nuestros
+              favoritos para lo cotidiano.
+            </p>
+            <a class="button light" href="#productos"
+              >Encuentra tu próximo favorito <span>↗</span></a
+            >
+            <div class="hero-note">
+              <span class="note-dot"></span> Diseño útil. Precios que tienen
+              sentido.
+            </div>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+            <div class="art-label">TU ESPACIO,<br />TUS REGLAS.</div>
+            <div class="headphones">
+              <div class="headband"></div>
+              <div class="ear left"></div>
+              <div class="ear right"></div>
+            </div>
+            <div class="floating-tag">
+              Una buena idea<br /><strong>suena así.</strong> ↗
+            </div>
+            <div class="art-star">✳</div>
+            <span class="art-index">SELECCIÓN / 01</span>
+          </div>
+        </div>
+        <div class="benefits">
+          <span>↗ Selección con intención</span
+          ><span>◈ Compra fácil y segura en tu entorno local</span
+          ><span>◎ Sigue cada paso de tu pedido</span>
+        </div>
+        <section id="productos" aria-labelledby="catalog-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">EXPLORA A TU MANERA</p>
+              <h2 id="catalog-title">Tu próximo favorito está aquí.</h2>
+            </div>
+            <span id="product-count" class="muted"></span>
+          </div>
+          <div class="toolbar">
+            <div
+              id="categories"
+              class="chips"
+              aria-label="Filtrar por categoría"
+            ></div>
+            <label class="search"
+              ><span>⌕</span
+              ><input
+                id="search"
+                type="search"
+                placeholder="Busca algo especial…"
+                aria-label="Buscar productos"
+                maxlength="100"
+            /></label>
+          </div>
+          <div id="catalog-status" role="status"></div>
+          <div id="product-grid" class="product-grid"></div>
+        </section>
+      </section>
+      <section id="carrito" class="view" hidden>
+        <p class="eyebrow">UN PASO MÁS CERCA</p>
+        <h1 class="page-title">Tu bolsa.</h1>
+        <div class="checkout-grid">
+          <div>
+            <div id="cart-items"></div>
+            <a class="text-link" href="#catalogo">← Seguir explorando</a>
+          </div>
+          <aside class="checkout-card">
+            <h2>El resumen</h2>
+            <div class="total-line">
+              <span>Total</span><strong id="cart-total">S/ 0.00</strong>
+            </div>
+            <form id="checkout-form">
+              <label
+                >Nombre completo<input
+                  name="cliente"
+                  required
+                  maxlength="100"
+                  autocomplete="name"
+              /></label>
+              <label
+                >Correo electrónico<input
+                  name="email"
+                  type="email"
+                  required
+                  maxlength="160"
+                  autocomplete="email"
+              /></label>
+              <label
+                >Dirección de entrega<textarea
+                  name="direccion"
+                  required
+                  maxlength="240"
+                  autocomplete="street-address"
+                  rows="2"
+                ></textarea>
+              </label>
+              <label
+                >Resultado del pago simulado<select name="aprobarPago">
+                  <option value="true">Aprobar pago</option>
+                  <option value="false">Rechazar pago</option>
+                </select></label
+              >
+              <p class="small muted">
+                Demostración académica. No se cobra dinero ni se solicitan datos
+                de tarjeta.
+              </p>
+              <button id="checkout-button" class="button full" type="submit">
+                Confirmar compra <span>↗</span>
+              </button>
+            </form>
+          </aside>
+        </div>
+      </section>
+      <section id="pedidos" class="view" hidden>
+        <p class="eyebrow">DE NUESTRA SELECCIÓN A TU PUERTA</p>
+        <h1 class="page-title">Mis pedidos.</h1>
+        <div id="pending-purchase"></div>
+        <form id="order-search" class="inline-form">
+          <label
+            >Consultar otra orden<input
+              name="id"
+              required
+              placeholder="Identificador de la orden (UUID)"
+              aria-label="Identificador de la orden" /></label
+          ><button class="button" type="submit">Consultar</button>
+        </form>
+        <div id="orders-list"></div>
+      </section>
+      <section id="seguimiento" class="view" hidden>
+        <p class="eyebrow">CADA PASO CUENTA</p>
+        <h1 class="page-title">Ya falta menos.</h1>
+        <p class="intro">
+          Consulta dónde está tu pedido con su número de guía.
+        </p>
+        <form id="tracking-form" class="inline-form">
+          <label
+            >Número de guía<input
+              id="tracking-code"
+              name="guia"
+              required
+              maxlength="40"
+              placeholder="Ejemplo: ENV-DEMO-001" /></label
+          ><button class="button" type="submit">
+            Rastrear envío <span>↗</span>
+          </button>
+        </form>
+        <div id="tracking-result"></div>
+      </section>
+      <div id="notice" role="status" aria-live="polite" hidden></div>
+    </main>
+    <footer>
+      <a class="brand" href="#catalogo">merca<span>✳</span></a>
+      <p>Lo cotidiano, un poco mejor.</p>
+      <span>Proyecto académico · E-commerce con microservicios</span>
+    </footer>
+    <script type="module" src="/ts/main.ts"></script>
+  </body>
+</html>

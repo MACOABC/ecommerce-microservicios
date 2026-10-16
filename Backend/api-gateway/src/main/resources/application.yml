@@ -1,0 +1,39 @@
+server:
+  port: ${PORT:8080}
+  address: ${BIND_ADDRESS:127.0.0.1}
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 3000
+            response-timeout: 20s
+          routes:
+            - id: productos
+              uri: ${PRODUCTOS_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/productos/**,/api/categorias/**
+            - id: ordenes
+              uri: ${ORDENES_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/ordenes/**
+            - id: envios
+              uri: ${ENVIOS_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/envios/**
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowedOrigins:
+                  - ${FRONTEND_ORIGIN:http://localhost:5173}
+                allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+                allowedHeaders: [Content-Type]
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
