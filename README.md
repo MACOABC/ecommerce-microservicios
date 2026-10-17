@@ -8,11 +8,11 @@ Aplicación académica con catálogo, categorías, carrito, órdenes, pago simul
 
 ```mermaid
 flowchart LR
-    U["Navegador :8088"] --> F["Frontend / Nginx :80"]
-    F -->|"/api conservando la ruta"| G["API Gateway :8080"]
-    G --> P["Productos :8081"]
-    G --> O["Órdenes :8082"]
-    G --> E["Envíos :8083"]
+    U["Navegador<br/>localhost:8088"] --> F["Frontend: HTML, CSS y TypeScript<br/>Build con Vite · Nginx :80"]
+    F -->|"HTTP /api · JSON"| G["API Gateway<br/>Java 21 · Spring Cloud Gateway :8080"]
+    G -->|"HTTP"| P["Productos<br/>Spring Boot · Spring JDBC :8081"]
+    G -->|"HTTP"| O["Órdenes y pago simulado<br/>Spring Boot · Spring JDBC :8082"]
+    G -->|"HTTP"| E["Envíos<br/>Spring Boot · Spring JDBC :8083"]
     O -->|"reservar / liberar stock"| P
     O -->|"crear o recuperar guía"| E
     E -->|"validar orden pagada"| O
@@ -22,6 +22,60 @@ flowchart LR
 ```
 
 Cada dominio tiene una instancia PostgreSQL, una base y un volumen propios, sin claves foráneas entre bases. El gateway publica las rutas `/api`; los endpoints `/internal` son para comunicación entre servicios.
+
+El diagrama representa el despliegue completo con Compose. El puerto 8088 pertenece al equipo y se redirige al puerto 80 de Nginx. Los puertos 8081, 8082 y 8083 se utilizan dentro de la red Docker. Hay tres servicios de negocio y una aplicación Java adicional que actúa como gateway. Cada servicio tiene su configuración y su artefacto ejecutable; compartir un POM padre de Maven no los convierte en un único proceso.
+
+### Recorrido de una compra
+
+```mermaid
+sequenceDiagram
+    actor Cliente
+    participant UI as Frontend en navegador
+    participant N as Nginx
+    participant G as API Gateway
+    participant O as Órdenes
+    participant DO as BD órdenes
+    participant P as Productos
+    participant DP as BD productos
+    participant E as Envíos
+    participant DE as BD envíos
+    Cliente->>UI: Confirma la compra
+    UI->>N: POST /api/ordenes (UUID e items)
+    N->>G: Conserva ruta y origen público
+    G->>O: Enruta la solicitud
+    O->>DO: Guarda intención de compra
+    O->>P: POST /internal/reservas/{UUID}
+    P->>DP: Bloquea inventario y reserva stock
+    DP-->>P: Reserva confirmada
+    P-->>O: Cantidades y precios del servidor
+    alt Pago simulado aprobado
+        O->>DO: Guarda total y estado PAGADA
+    else Pago simulado rechazado
+        O->>P: POST /internal/reservas/{UUID}/liberar
+        P->>DP: Devuelve stock una sola vez
+        O->>DO: Guarda estado RECHAZADA
+    end
+    O-->>G: Resultado de la orden
+    G-->>N: Resultado
+    N-->>UI: Resultado
+    opt Orden pagada
+        UI->>N: POST /api/ordenes/{UUID}/envio
+        N->>G: Reenvía petición
+        G->>O: Solicita envío
+        O->>E: POST /internal/envios
+        E->>O: GET /api/ordenes/{UUID}
+        O-->>E: Confirma que está PAGADA
+        E->>DE: Guarda guía y evento PREPARANDO
+        E-->>O: Envío único de la orden
+        O-->>G: Envío
+        G-->>N: Envío
+        N-->>UI: Guía disponible
+    end
+```
+
+Las llamadas entre servicios son HTTP síncronas y directas; las solicitudes del navegador entran por Nginx y el gateway. El carrito vive en el navegador hasta enviarse como items de la compra. Las reservas de productos y las actualizaciones de órdenes son transacciones locales diferentes, no una transacción distribuida única.
+
+El [guion de exposición para seis integrantes](GUION_EXPOSICION.md) organiza una demostración en vivo de aproximadamente 15 a 18 minutos.
 
 En el despliegue completo, cada base está en una red interna diferente junto a su servicio. Los servicios HTTP comparten la red de aplicación. Sólo Nginx y el gateway publican puertos al equipo, ligados a `127.0.0.1`.
 
