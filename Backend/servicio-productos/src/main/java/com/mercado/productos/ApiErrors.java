@@ -48,6 +48,19 @@ class ApiErrors {
     }
     @ExceptionHandler(Exception.class)
     ResponseEntity<?> unexpected(Exception e, HttpServletRequest r) {
+        // Conserva los estados HTTP de Spring (404, 405, 415...) en vez de convertirlos en 500.
+        if (e instanceof org.springframework.web.ErrorResponse response) {
+            int status = response.getStatusCode().value();
+            String message = switch (status) {
+                case 400 -> "La solicitud está incompleta o tiene un formato inválido";
+                case 404 -> "Ruta no encontrada";
+                case 405 -> "Método HTTP no permitido para esta ruta";
+                case 415 -> "Envía los datos con el formato JSON";
+                default -> "No se pudo atender la solicitud";
+            };
+            var result = error(status, message, r);
+            return ResponseEntity.status(response.getStatusCode()).headers(response.getHeaders()).body(result.getBody());
+        }
         log.error("Error procesando {}", r.getRequestURI(), e);
         return error(500, "Error interno del servicio", r);
     }

@@ -154,13 +154,19 @@
         <p class="eyebrow">DE NUESTRA SELECCIÓN A TU PUERTA</p>
         <h1 class="page-title">Mis pedidos.</h1>
         <div id="pending-purchase"></div>
-        <form id="order-search" class="inline-form">
+        <form id="order-search" class="inline-form" autocomplete="off">
           <label
             >Consultar otra orden<input
-              name="id"
+              id="order-code"
+              name="orderId"
               required
-              placeholder="Identificador de la orden (UUID)"
-              aria-label="Identificador de la orden" /></label
+              minlength="36"
+              maxlength="36"
+              pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+              title="Copia el código completo del pedido, incluidos sus guiones."
+              placeholder="Código completo del pedido"
+              aria-label="Identificador de la orden"
+              autocomplete="off" /></label
           ><button class="button" type="submit">Consultar</button>
         </form>
         <div id="orders-list"></div>

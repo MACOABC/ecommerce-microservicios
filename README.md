@@ -398,3 +398,5 @@ En ejecución local los servicios escuchan en loopback; en Docker se comunican p
 ## Verificación
 
 Consulta [Backend/VERIFICACION.md](Backend/VERIFICACION.md) para los resultados de compilación, las verificaciones locales y la validación estática de Compose. La construcción y ejecución de los contenedores requiere un Docker Engine activo y queda pendiente en este equipo. No se incluyen suites de pruebas.
+
+La [revisión integral de la página](Backend/REVISION_PAGINA.md) documenta 71 comprobaciones funcionales, las recuperaciones de compra simuladas y la corrección del encabezado Host de Nginx para comprar a través del puerto 8088.

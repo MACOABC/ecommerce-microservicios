@@ -2,6 +2,8 @@
 
 Fecha: 16 de octubre de 2026.
 
+La revisión funcional más reciente se encuentra en [REVISION_PAGINA.md](REVISION_PAGINA.md): 71 comprobaciones funcionales, revisión visual y correcciones del proxy y de errores HTTP. Las secciones siguientes conservan el historial de las verificaciones iniciales.
+
 ## Entorno
 
 - Windows / PowerShell.

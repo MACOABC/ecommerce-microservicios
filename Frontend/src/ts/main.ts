@@ -26,6 +26,8 @@ const money = (value: number) =>
   );
 const date = (value: string) => new Date(value).toLocaleString("es-PE");
 const stateLabel = (value: string) => value.replaceAll("_", " ").toLowerCase();
+const isOrderId = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 function read<T>(key: string, fallback: T): T {
   try {
     return JSON.parse(localStorage.getItem(key) || "null") ?? fallback;
@@ -59,7 +61,9 @@ let cart: CartLine[] = Array.isArray(storedCart)
   : [];
 const storedIds = read<unknown>("merca.orders", []);
 let orderIds: string[] = Array.isArray(storedIds)
-  ? storedIds.filter((id): id is string => typeof id === "string")
+  ? storedIds.filter(
+      (id): id is string => typeof id === "string" && isOrderId(id),
+    )
   : [];
 let pending = read<Compra | null>("merca.pending", null);
 let products: Producto[] = [];
@@ -393,8 +397,12 @@ el("checkout-form").addEventListener("submit", (event) => {
 el("order-search").addEventListener("submit", async (event) => {
   event.preventDefault();
   const id = String(
-    new FormData(event.target as HTMLFormElement).get("id"),
+    new FormData(event.target as HTMLFormElement).get("orderId"),
   ).trim();
+  if (!isOrderId(id)) {
+    notify("Copia el código completo del pedido, incluidos sus guiones.", true);
+    return;
+  }
   try {
     const o = await api<Orden>("/ordenes/" + encodeURIComponent(id));
     remember(o.id);
